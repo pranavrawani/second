@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Valentine ❤️</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        /* --- THE MATRIX CANVAS --- */
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* --- START BUTTON (Needed for Audio) --- */
+        #start-screen {
+            position: absolute;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        .start-btn {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background: #ff0055;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+
+        /* --- THE REVEAL CONTENT --- */
+        #main-content {
+            display: none; /* Hidden initially */
+            position: absolute;
+            z-index: 10;
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        /* Flashing Text Animation */
+        .big-text {
+            font-size: 3rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            position: absolute;
+            width: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Final Card Display */
+        .final-card {
+            opacity: 0;
+            transition: opacity 1s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .final-card img {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255, 192, 203, 0.3);
+        }
+
+        .message {
+            font-size: 1.5rem;
+            color: #ffcae5;
+            line-height: 1.5;
+        }
+
+        /* --- COUNTDOWN --- */
+        #countdown {
+            position: absolute;
+            z-index: 50;
+            font-size: 8rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 20px #ff0055;
+            display: none;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .big-text { font-size: 2rem; }
+            .final-card img { max-width: 80%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <button class="start-btn" onclick="startSurprise()">Tap to Open ❤️</button>
+    </div>
+
+    <canvas id="matrixCanvas"></canvas>
+
+    <div id="countdown">3</div>
+
+    <div id="main-content">
+        <div id="text1" class="big-text">HAPPY</div>
+        <div id="text2" class="big-text">VALENTINE'S</div>
+        <div id="text3" class="big-text">DAY!</div>
+        
+        <div id="finalCard" class="final-card">
+            <img src="https://media.tenor.com/efMaa_agZ9kAAAAi/peach-goma-love.gif" alt="Cute Bears">
+            <p class="message">
+                You make my world colorful.<br>
+                I love you! ❤️
+            </p>
+        </div>
+    </div>
+
+    <audio id="bgMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3" loop></audio>
+
+    <script>
+        // --- MATRIX RAIN EFFECT ---
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const katakana = 'AZertyuiopqsdfghjklmwxcvbn1234567890❤️❤️';
+        const letters = katakana.split('');
+
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        function drawMatrix() {
+            // Semi-transparent black to create trailing effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ff0055'; // Pink/Red Matrix Rain
+            ctx.font = fontSize + 'px arial';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        let matrixInterval;
+
+        // --- SEQUENCE LOGIC ---
+        function startSurprise() {
+            // 1. Hide Start Button
+            document.getElementById('start-screen').style.display = 'none';
+            
+            // 2. Start Music
+            const music = document.getElementById('bgMusic');
+            music.volume = 0.5;
+            music.play().catch(e => console.log("Audio play failed (user interaction needed)"));
+
+            // 3. Start Matrix Rain
+            matrixInterval = setInterval(drawMatrix, 33);
+
+            // 4. Start Countdown after 1 second
+            setTimeout(() => {
+                runCountdown();
+            }, 1000);
+        }
+
+        function runCountdown() {
+            const countEl = document.getElementById('countdown');
+            countEl.style.display = 'block';
+            
+            let count = 3;
+            countEl.innerText = count;
+
+            const timer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countEl.innerText = count;
+                } else {
+                    clearInterval(timer);
+                    countEl.style.display = 'none';
+                    showReveal();
+                }
+            }, 1000);
+        }
+
+        function showReveal() {
+            const content = document.getElementById('main-content');
+            content.style.display = 'block';
+
+            // Stop Matrix Rain to make text readable (optional, looks cleaner)
+            // clearInterval(matrixInterval);
+            // ctx.clearRect(0,0, canvas.width, canvas.height); 
+
+            // Sequence: HAPPY -> VALENTINE'S -> DAY -> CARD
+            const t1 = document.getElementById('text1');
+            const t2 = document.getElementById('text2');
+            const t3 = document.getElementById('text3');
+            const card = document.getElementById('finalCard');
+
+            // Flash Texts
+            setTimeout(() => { t1.style.opacity = 1; }, 100);
+            setTimeout(() => { t1.style.opacity = 0; }, 1000);
+
+            setTimeout(() => { t2.style.opacity = 1; }, 1200);
+            setTimeout(() => { t2.style.opacity = 0; }, 2200);
+
+            setTimeout(() => { t3.style.opacity = 1; }, 2400);
+            setTimeout(() => { t3.style.opacity = 0; }, 3400);
+
+            // Show Final Card
+            setTimeout(() => { 
+                card.style.opacity = 1; 
+                // Keep Matrix running in background but darker?
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }, 3600);
+        }
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
